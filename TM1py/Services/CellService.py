@@ -20,6 +20,8 @@ from TM1py.Utils import Utils, CaseAndSpaceInsensitiveSet, format_url
 from TM1py.Utils.Utils import build_pandas_dataframe_from_cellset, dimension_name_from_element_unique_name, \
     CaseAndSpaceInsensitiveTuplesDict, abbreviate_mdx
 
+# Overrides the deletion of cellset
+DELETE_CELLSET = False
 
 def tidy_cellset(func):
     """ Higher Order Function to tidy up cellset after usage
@@ -30,7 +32,7 @@ def tidy_cellset(func):
         try:
             return func(self, cellset_id, *args, **kwargs)
         finally:
-            if kwargs.get("delete_cellset", True):
+            if kwargs.get("delete_cellset", True) and DELETE_CELLSET:
                 self.delete_cellset(cellset_id=cellset_id)
 
     return wrapper
