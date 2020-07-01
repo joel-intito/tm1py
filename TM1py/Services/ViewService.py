@@ -192,3 +192,37 @@ class ViewService(ObjectService):
         url = format_url("/api/v1/Cubes('{}')/{}('{}')", cube_name, view_type, view_name)
         response = self._rest.DELETE(url, **kwargs)
         return response
+
+    def get_with_options(self, cube_name, view_name, payload="", data=True, meta=True, Attributes=True):
+        """ method for only getting data or metadata using a given payload  """
+        #import json
+        # Attributes arg is unused
+        if data:
+            requestData =  "/api/v1/Cubes('{}')/Views('{}')/" \
+                        "tm1.Execute?" \
+                        "$expand="\
+                        "Axes(" \
+                            "$expand="\
+                            "Hierarchies($select=Name),"\
+                            "Tuples($expand=Members($select=Name;$expand=Element($select=Name, Level, Attributes)))" \
+                        "),"\
+                        "Cells($select=Ordinal,Value,FormattedValue,Consolidated,RuleDerived,Updateable)"\
+                        "".format(cube_name, view_name)
+            responseData = self._rest.POST(requestData, payload) 
+           
+        if meta:
+            #updating to get attributes
+            requestMeta = "/api/v1/Cubes('{}')/Views('{}')/tm1.NativeView?$expand=Titles/Subset($expand=Hierarchy($select=Name;$expand=Dimension($select=Name)),Elements($select=Name, Attributes)),Titles/Selected($select=Name)".format(cube_name, view_name)
+            '''requestMeta = "/api/v1/Cubes('{}')/Views('{}')/tm1.NativeView" \
+                        "?$expand=Titles/Subset($expand=Hierarchy($select=Name;$expand=Dimension($select=Name)),Elements($select=Name))" \
+                        ",Titles/Selected($select=Name)" \
+                        ",Columns/Subset($expand=Hierarchy($select=Name;$expand=Dimension($select=Name)),Elements($select=Name))".format(cube_name, view_name)
+            '''
+            responseMeta = self._rest.GET(requestMeta)
+        
+        if data and meta:
+            return responseData.json(), responseMeta.json()
+        elif data and not meta:
+            return responseData.json()
+        else:
+            return responseMeta.json()

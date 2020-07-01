@@ -80,7 +80,9 @@ class NativeView(View):
                                                     in subset.elements]
                         mdx_set = '{' + ','.join(elements_as_unique_names) + '}'
                         if j == 0:
-                            if self.suppress_empty_columns:
+                            if i == 0 and self.suppress_empty_rows:
+                                mdx += 'NON EMPTY '
+                            if i == 1 and self.suppress_empty_columns:
                                 mdx += 'NON EMPTY '
                             mdx += mdx_set
                         else:
@@ -88,6 +90,8 @@ class NativeView(View):
                 else:
                     mdx_set = 'TM1SubsetToSet([{}],"{}")'.format(axis_selection.dimension_name, subset.name)
                     if j == 0:
+                         # Todo might be wrong here as well
+                        print('WARNING: suppressing might not work, NativeView.py')
                         if self.suppress_empty_columns:
                             mdx += 'NON EMPTY '
                         mdx += mdx_set
